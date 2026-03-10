@@ -24,6 +24,12 @@
     
     <script src="firebase-config.js"></script>
 
+    <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+    <script defer src="/_vercel/insights/script.js"></script>
+    
+    <script>window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };</script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+
     <style>
         :root {
             --saffron: #FF9933;
@@ -66,12 +72,11 @@
         .nav-item .icon { font-size: 1.2rem; font-family: 'Tiro Devanagari Hindi', serif; }
         .outline-btn { background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold); color: var(--gold); padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: 0.3s; font-family: inherit; }
         .outline-btn:hover { background: var(--gold); color: var(--temple-dark); box-shadow: var(--soft-glow); }
-        .streak-badge { background: linear-gradient(135deg, var(--gold), var(--saffron)); color: #000; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: none; margin-left: 15px; box-shadow: var(--soft-glow); }
+        .streak-badge { background: linear-gradient(135deg, var(--gold), var(--saffron)); color: #000; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: none; box-shadow: var(--soft-glow); }
 
         /* Main Area */
         main { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px 5%; position: relative; }
         
-        /* Option B Landing Text */
         #landing-text { font-size: 2.8rem; line-height: 1.3; color: var(--gold); text-shadow: var(--soft-glow); margin-bottom: 15px; max-width: 800px; }
         .sub-message { color: rgba(255,255,255,0.7); max-width: 650px; line-height: 1.6; font-size: 1.1rem; margin-bottom: 30px; }
         
@@ -225,17 +230,58 @@
     <div id="youtube-player"></div>
 
     <script>
-        // --- 1. FULL CHALISA DATA (Truncated for brevity, expand as needed) ---
+        // --- 1. FULL CHALISA DATA ---
+        // You can expand this array to include all 40 verses using the timestamps for your specific video!
         const chalisaVerses = [
             { time: 0, hi: "श्री गुरु चरण सरोज रज,<br>निज मनु मुकुर सुधारी ।", hing: "Shri Guru Charan Saroj Raj, Nij Man Mukur Sudhari |", en: "Having cleansed the mirror of my mind with the dust of the lotus feet..." },
             { time: 15, hi: "बरनहु रघुवर विमल जसु,<br>जो दायक फल चारी ॥", hing: "Barnau Raghuvar Bimal Jasu, Jo Dayaku Phal Chari ||", en: "I describe the pure glory of Shri Raghuvira, which bestows the four fruits of life." },
             { time: 28, hi: "बुद्धिहीन तनु जान के,<br>सुमिरो पवन कुमार ।", hing: "Budhiheen Tanu Janike, Sumiro Pavan Kumar |", en: "Knowing myself to be devoid of intelligence, I remember the Son of the Wind." },
-            { time: 42, hi: "बल बुद्धि विद्या देहु मोहि,<br>हरहु कलेश विकार ॥", hing: "Bal Budhi Vidya Dehu Mohi, Harahu Kalesh Vikar ||", en: "Grant me strength, wisdom, and knowledge, and remove my miseries and flaws." }
+            { time: 42, hi: "बल बुद्धि विद्या देहु मोहि,<br>हरहु कलेश विकार ॥", hing: "Bal Budhi Vidya Dehu Mohi, Harahu Kalesh Vikar ||", en: "Grant me strength, wisdom, and knowledge, and remove my miseries and flaws." },
+            { time: 55, hi: "जय हनुमान ज्ञान गुण सागर,<br>जय कपीस तिहुँ लोक उजागर ॥", hing: "Jai Hanuman gyan gun sagar, Jai Kapees tihu lok ujagar ||", en: "Victory to Hanuman, ocean of wisdom and virtue..." },
+            // ... [Fill in remaining Chaupais here] ...
+            { time: 504, hi: "पवनतनय संकट हरन,<br>मंगल मूरति रूप ।", hing: "Pavantanay sankat haran, Mangal murti roop |", en: "O Son of the Wind, destroyer of sorrows, embodiment of auspiciousness." },
+            { time: 512, hi: "राम लखन सीता सहित,<br>हृदय बसहु सुर भूप ॥", hing: "Ram Lakhan Sita sahit, Hriday basahu sur bhoop ||", en: "Along with Rama, Lakshmana, and Sita, please reside in my heart, O King of Gods." }
         ];
 
-        // --- 2. FIREBASE LIVE COUNTER LOGIC ---
+        // --- 2. STREAK SYSTEM LOGIC ---
+        function checkStreak() {
+            const lastDate = localStorage.getItem('lastChantDate');
+            let streak = parseInt(localStorage.getItem('devotionStreak')) || 0;
+            const today = new Date().toDateString();
+
+            if (lastDate) {
+                const diffDays = Math.ceil(Math.abs(new Date(today) - new Date(lastDate)) / (1000 * 60 * 60 * 24));
+                if (diffDays > 1) {
+                    streak = 0; // Missed a day, reset.
+                    localStorage.setItem('devotionStreak', 0);
+                }
+            }
+
+            if (streak > 0) {
+                const badge = document.getElementById('streak-display');
+                badge.style.display = 'block';
+                badge.innerText = `🔥 ${streak} Day Streak!`;
+            }
+        }
+
+        function completeChant() {
+            const today = new Date().toDateString();
+            const lastDate = localStorage.getItem('lastChantDate');
+            let streak = parseInt(localStorage.getItem('devotionStreak')) || 0;
+
+            if (lastDate !== today) {
+                streak += 1;
+                localStorage.setItem('devotionStreak', streak);
+                localStorage.setItem('lastChantDate', today);
+                
+                const badge = document.getElementById('streak-display');
+                badge.style.display = 'block';
+                badge.innerText = `🔥 ${streak} Day Streak!`;
+            }
+        }
+
+        // --- 3. FIREBASE LIVE COUNTER LOGIC ---
         function initFirebaseCounter() {
-            // Check if user has created their config file yet
             if (typeof firebaseConfig === 'undefined') {
                 console.warn("Firebase config not found. Falling back to demo counter.");
                 startDemoCounter();
@@ -243,15 +289,11 @@
             }
 
             try {
-                // Initialize Firebase
                 firebase.initializeApp(firebaseConfig);
                 const database = firebase.database();
-                
-                // Track active connections
                 const activeUsersRef = database.ref('active_users');
                 const myConnectionRef = activeUsersRef.push();
                 
-                // When I connect, add me to the list. When I disconnect, remove me.
                 database.ref('.info/connected').on('value', function(snap) {
                     if (snap.val() === true) {
                         myConnectionRef.onDisconnect().remove();
@@ -259,10 +301,9 @@
                     }
                 });
 
-                // Listen to total count and update UI
                 activeUsersRef.on('value', function(snapshot) {
                     const activeCount = snapshot.numChildren();
-                    document.getElementById('counter-val').innerText = (activeCount + 108).toLocaleString(); // Base number of 108 for spiritual aesthetics if empty
+                    document.getElementById('counter-val').innerText = (activeCount + 108).toLocaleString();
                 });
             } catch(e) {
                 console.error("Firebase error", e);
@@ -270,7 +311,6 @@
             }
         }
 
-        // Fallback demo counter if Firebase isn't set up yet
         function startDemoCounter() {
             let count = 2134;
             document.getElementById('counter-val').innerText = count.toLocaleString();
@@ -280,11 +320,95 @@
             }, 3000);
         }
 
-        // --- 3. UI, MODALS & YOUTUBE ---
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        // --- 4. REMINDERS & NOTIFICATIONS ---
+        function loadReminders() {
+            const list = document.getElementById('reminder-list');
+            let reminders = JSON.parse(localStorage.getItem('appReminders')) || [];
+            if(reminders.length === 0) { list.innerHTML = "<p style='color: gray; font-size: 0.9rem; text-align: center;'>No reminders set yet.</p>"; return; }
+            list.innerHTML = reminders.map((time, index) => `
+                <div class="reminder-item">
+                    <span>🔔 <strong>${formatTime(time)}</strong></span>
+                    <button class="delete-btn" onclick="removeReminder(${index})">🗑</button>
+                </div>
+            `).join('');
+        }
+
+        function formatTime(time24) {
+            let [hours, minutes] = time24.split(':');
+            let h = parseInt(hours); let ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12; return `${h}:${minutes} ${ampm}`;
+        }
+
+        function addReminder() {
+            const input = document.getElementById('reminder-time');
+            const time = input.value;
+            if(!time) return alert("Please select a time first.");
+
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission().then(permission => {
+                    if(permission !== "granted") alert("Please allow notifications in your browser to receive reminders.");
+                });
+            }
+
+            let reminders = JSON.parse(localStorage.getItem('appReminders')) || [];
+            if(!reminders.includes(time)) {
+                reminders.push(time); reminders.sort();
+                localStorage.setItem('appReminders', JSON.stringify(reminders));
+            }
+            input.value = ""; loadReminders();
+        }
+
+        function removeReminder(index) {
+            let reminders = JSON.parse(localStorage.getItem('appReminders')) || [];
+            reminders.splice(index, 1); localStorage.setItem('appReminders', JSON.stringify(reminders));
+            loadReminders();
+        }
+
+        setInterval(() => {
+            if (Notification.permission === "granted") {
+                const now = new Date();
+                const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                let reminders = JSON.parse(localStorage.getItem('appReminders')) || [];
+                
+                if (reminders.includes(currentTime) && now.getSeconds() < 2) {
+                    new Notification("Divine Sanctuary", {
+                        body: "Release the heaviness. It's time to build your Hanuman Chalisa habit.",
+                        icon: "https://cdn-icons-png.flaticon.com/512/3602/3602145.png"
+                    });
+                }
+            }
+        }, 1000);
+
+        // --- 5. UI, MODALS & YOUTUBE ---
+        function openModal(id) { 
+            document.getElementById(id).style.display = 'flex'; 
+            if(id === 'about-modal') loadBlessings();
+            if(id === 'reminder-modal') loadReminders();
+        }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // Language & Fullscreen
+        function submitBlessing() {
+            const input = document.getElementById('blessing-input');
+            const text = input.value.trim();
+            if(!text) return;
+            let blessings = JSON.parse(localStorage.getItem('appBlessings')) || [];
+            blessings.unshift({ text: text, date: new Date().toLocaleDateString() });
+            localStorage.setItem('appBlessings', JSON.stringify(blessings));
+            input.value = ""; loadBlessings();
+        }
+
+        function loadBlessings() {
+            const list = document.getElementById('comment-list');
+            let blessings = JSON.parse(localStorage.getItem('appBlessings')) || [];
+            if(blessings.length === 0) return list.innerHTML = "<p style='color: gray; font-size: 0.9rem;'>Be the first to leave a blessing.</p>";
+            list.innerHTML = blessings.map(b => `
+                <div class="comment-item">
+                    <p style="margin-bottom: 5px;">"${b.text}"</p>
+                    <small style="color: var(--saffron); opacity: 0.7;">- Anonymous Devotee • ${b.date}</small>
+                </div>
+            `).join('');
+        }
+
         let prefs = { hi: true, hing: true, en: true };
         function toggleLang(lang) {
             prefs[lang] = !prefs[lang];
@@ -296,11 +420,14 @@
             else if (document.exitFullscreen) document.exitFullscreen();
         }
 
-        // YouTube Setup
         var player;
         function onYouTubeIframeAPIReady() {
-            player = new YT.Player('youtube-player', { height: '0', width: '0', videoId: 'TvYCMXbWELM' });
-            initFirebaseCounter(); // Start tracking users when page loads
+            player = new YT.Player('youtube-player', { 
+                height: '0', width: '0', videoId: 'TvYCMXbWELM',
+                events: { 'onStateChange': onPlayerStateChange } 
+            });
+            initFirebaseCounter(); 
+            checkStreak(); 
         }
         var tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
@@ -313,6 +440,43 @@
             document.getElementById('player-bar').style.display = 'flex';
             player.playVideo();
             setInterval(syncLyrics, 500);
+        }
+
+        function togglePlayback() {
+            if (player.getPlayerState() === 1) { player.pauseVideo(); document.getElementById('play-pause').innerText = "▶"; } 
+            else { player.playVideo(); document.getElementById('play-pause').innerText = "⏸"; }
+        }
+
+        function onPlayerStateChange(event) {
+            // Log streak on video end
+            if (event.data == YT.PlayerState.ENDED) {
+                document.getElementById('chanting-container').innerHTML = "<div class='verse-hi'>Jai Shri Ram. <br>Your Daily Sankalpa is Complete.</div>";
+                completeChant(); 
+            }
+        }
+
+        let currentIndex = -1;
+        function syncLyrics() {
+            if (player && player.getPlayerState() === 1) {
+                const time = player.getCurrentTime(), duration = player.getDuration();
+                if(duration > 0) document.getElementById('progress-fill').style.width = (time / duration * 100) + "%";
+                let newIndex = 0;
+                for (let i = 0; i < chalisaVerses.length; i++) if (time >= chalisaVerses[i].time) newIndex = i;
+                if (newIndex !== currentIndex) {
+                    const container = document.getElementById('chanting-container');
+                    container.style.opacity = 0; 
+                    setTimeout(() => {
+                        document.getElementById('text-hi').innerHTML = chalisaVerses[newIndex].hi;
+                        document.getElementById('text-hing').innerText = chalisaVerses[newIndex].hing;
+                        document.getElementById('text-en').innerText = chalisaVerses[newIndex].en;
+                        container.style.opacity = 1; currentIndex = newIndex;
+                    }, 400); 
+                }
+            }
+        }
+    </script>
+</body>
+</html>
         }
 
         function togglePlayback() {
