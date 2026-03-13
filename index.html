@@ -21,12 +21,10 @@
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
-    
     <script src="firebase-config.js"></script>
 
     <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
     <script defer src="/_vercel/insights/script.js"></script>
-    
     <script>window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };</script>
     <script defer src="/_vercel/speed-insights/script.js"></script>
 
@@ -231,14 +229,12 @@
 
     <script>
         // --- 1. FULL CHALISA DATA ---
-        // You can expand this array to include all 40 verses using the timestamps for your specific video!
         const chalisaVerses = [
             { time: 0, hi: "श्री गुरु चरण सरोज रज,<br>निज मनु मुकुर सुधारी ।", hing: "Shri Guru Charan Saroj Raj, Nij Man Mukur Sudhari |", en: "Having cleansed the mirror of my mind with the dust of the lotus feet..." },
             { time: 15, hi: "बरनहु रघुवर विमल जसु,<br>जो दायक फल चारी ॥", hing: "Barnau Raghuvar Bimal Jasu, Jo Dayaku Phal Chari ||", en: "I describe the pure glory of Shri Raghuvira, which bestows the four fruits of life." },
             { time: 28, hi: "बुद्धिहीन तनु जान के,<br>सुमिरो पवन कुमार ।", hing: "Budhiheen Tanu Janike, Sumiro Pavan Kumar |", en: "Knowing myself to be devoid of intelligence, I remember the Son of the Wind." },
             { time: 42, hi: "बल बुद्धि विद्या देहु मोहि,<br>हरहु कलेश विकार ॥", hing: "Bal Budhi Vidya Dehu Mohi, Harahu Kalesh Vikar ||", en: "Grant me strength, wisdom, and knowledge, and remove my miseries and flaws." },
             { time: 55, hi: "जय हनुमान ज्ञान गुण सागर,<br>जय कपीस तिहुँ लोक उजागर ॥", hing: "Jai Hanuman gyan gun sagar, Jai Kapees tihu lok ujagar ||", en: "Victory to Hanuman, ocean of wisdom and virtue..." },
-            // ... [Fill in remaining Chaupais here] ...
             { time: 504, hi: "पवनतनय संकट हरन,<br>मंगल मूरति रूप ।", hing: "Pavantanay sankat haran, Mangal murti roop |", en: "O Son of the Wind, destroyer of sorrows, embodiment of auspiciousness." },
             { time: 512, hi: "राम लखन सीता सहित,<br>हृदय बसहु सुर भूप ॥", hing: "Ram Lakhan Sita sahit, Hriday basahu sur bhoop ||", en: "Along with Rama, Lakshmana, and Sita, please reside in my heart, O King of Gods." }
         ];
@@ -252,7 +248,7 @@
             if (lastDate) {
                 const diffDays = Math.ceil(Math.abs(new Date(today) - new Date(lastDate)) / (1000 * 60 * 60 * 24));
                 if (diffDays > 1) {
-                    streak = 0; // Missed a day, reset.
+                    streak = 0; 
                     localStorage.setItem('devotionStreak', 0);
                 }
             }
@@ -443,45 +439,20 @@
         }
 
         function togglePlayback() {
-            if (player.getPlayerState() === 1) { player.pauseVideo(); document.getElementById('play-pause').innerText = "▶"; } 
-            else { player.playVideo(); document.getElementById('play-pause').innerText = "⏸"; }
+            if (player.getPlayerState() === 1) { 
+                player.pauseVideo(); 
+                document.getElementById('play-pause').innerText = "▶"; 
+            } else { 
+                player.playVideo(); 
+                document.getElementById('play-pause').innerText = "⏸"; 
+            }
         }
 
         function onPlayerStateChange(event) {
-            // Log streak on video end
             if (event.data == YT.PlayerState.ENDED) {
                 document.getElementById('chanting-container').innerHTML = "<div class='verse-hi'>Jai Shri Ram. <br>Your Daily Sankalpa is Complete.</div>";
                 completeChant(); 
             }
-        }
-
-        let currentIndex = -1;
-        function syncLyrics() {
-            if (player && player.getPlayerState() === 1) {
-                const time = player.getCurrentTime(), duration = player.getDuration();
-                if(duration > 0) document.getElementById('progress-fill').style.width = (time / duration * 100) + "%";
-                let newIndex = 0;
-                for (let i = 0; i < chalisaVerses.length; i++) if (time >= chalisaVerses[i].time) newIndex = i;
-                if (newIndex !== currentIndex) {
-                    const container = document.getElementById('chanting-container');
-                    container.style.opacity = 0; 
-                    setTimeout(() => {
-                        document.getElementById('text-hi').innerHTML = chalisaVerses[newIndex].hi;
-                        document.getElementById('text-hing').innerText = chalisaVerses[newIndex].hing;
-                        document.getElementById('text-en').innerText = chalisaVerses[newIndex].en;
-                        container.style.opacity = 1; currentIndex = newIndex;
-                    }, 400); 
-                }
-            }
-        }
-    </script>
-</body>
-</html>
-        }
-
-        function togglePlayback() {
-            if (player.getPlayerState() === 1) { player.pauseVideo(); document.getElementById('play-pause').innerText = "▶"; } 
-            else { player.playVideo(); document.getElementById('play-pause').innerText = "⏸"; }
         }
 
         let currentIndex = -1;
